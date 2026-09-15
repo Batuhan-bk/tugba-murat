@@ -18,9 +18,22 @@ export default function AdminPhotosPage() {
   const [error, setError] = useState("");
   const [actionLoading, setActionLoading] = useState<number | null>(null);
 
-  useEffect(() => {
+useEffect(() => {
+  const checkAuth = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      window.location.href = "/admin/login";
+      return;
+    }
+
     loadPhotos();
-  }, []);
+  };
+
+  checkAuth();
+}, []);
 
   const createSignedUrl = async (storagePath: string) => {
     const { data, error } = await supabase.storage
