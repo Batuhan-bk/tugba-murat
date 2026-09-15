@@ -89,9 +89,9 @@ export default function EventEnvelope({
             <div className="my-8 h-px bg-[#e5ded5]" />
 
             {/* Mekan */}
-            <p className="text-sm leading-7 text-[#6f625a]">
-              {location}
-            </p>
+           <p className="whitespace-pre-line text-sm leading-7 text-[#6f625a]">
+  {location}
+</p>
 
             {/* Konum */}
             <a
