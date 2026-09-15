@@ -1,0 +1,707 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f9f7f2;
+  --foreground: #403a36;
+
+  --cream: #f2eee6;
+  --paper: #faf8f3;
+  --blush: #e8d3ca;
+  --blush-light: #f1e3dd;
+  --sage: #a8b2a0;
+  --brown: #6f625a;
+  --muted: #8f857d;
+  --border: #e5ded5;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-cream: var(--cream);
+  --color-paper: var(--paper);
+  --color-blush: var(--blush);
+  --color-blush-light: var(--blush-light);
+  --color-sage: var(--sage);
+  --color-brown: var(--brown);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-heading);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), sans-serif;
+}
+
+/* -----------------------------------------
+   SEÇİM
+----------------------------------------- */
+
+::selection {
+  background: #e8d3ca;
+  color: #403a36;
+}
+
+/* -----------------------------------------
+   BUTON / LINK
+----------------------------------------- */
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* -----------------------------------------
+   KAĞIT HİSSİ
+----------------------------------------- */
+
+.paper-texture {
+  background-color: #f9f7f2;
+
+  background-image:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(255, 255, 255, 0.65) 0,
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(232, 211, 202, 0.08) 0,
+      transparent 30%
+    );
+}
+
+/* -----------------------------------------
+   YUMUŞAK BÖLÜM GEÇİŞİ
+----------------------------------------- */
+
+.soft-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.soft-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(232, 211, 202, 0.13),
+      transparent 35%
+    );
+}
+
+/* -----------------------------------------
+   BOTANİK AYRAÇ
+----------------------------------------- */
+
+.botanical-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 28px auto 0;
+  width: 180px;
+  color: #a8b2a0;
+}
+
+.botanical-divider::before,
+.botanical-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: #e5ded5;
+}
+
+.botanical-divider span {
+  font-size: 15px;
+  opacity: 0.75;
+}
+
+/* -----------------------------------------
+   HERO YUMUŞAK IŞIKLARI
+----------------------------------------- */
+
+.hero-glow {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 999px;
+
+  background: radial-gradient(
+    circle,
+    rgba(232, 211, 202, 0.22) 0%,
+    rgba(232, 211, 202, 0.08) 38%,
+    transparent 70%
+  );
+
+  filter: blur(8px);
+  pointer-events: none;
+
+  animation: softFloat 8s ease-in-out infinite;
+}
+
+.hero-glow-left {
+  top: 12%;
+  left: -180px;
+}
+
+.hero-glow-right {
+  right: -180px;
+  bottom: 8%;
+  animation-delay: -4s;
+}
+
+/* -----------------------------------------
+   HAFİF YÜZEN BOTANİK DETAY
+----------------------------------------- */
+
+.floating-detail {
+  animation: gentleFloat 7s ease-in-out infinite;
+}
+
+.floating-detail-slow {
+  animation: gentleFloat 10s ease-in-out infinite;
+  animation-delay: -3s;
+}
+
+/* -----------------------------------------
+   FOTOĞRAF ALANI
+----------------------------------------- */
+
+.hero-photo {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero-photo::before {
+  content: "";
+  position: absolute;
+  inset: 12px -10px -12px 10px;
+  border: 1px solid rgba(216, 200, 189, 0.55);
+  border-radius: 200px;
+  z-index: -1;
+}
+
+/* -----------------------------------------
+   SAYI BLOKLARI
+----------------------------------------- */
+
+.countdown-item {
+  position: relative;
+}
+
+.countdown-item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: 50%;
+  width: 1px;
+  height: 28px;
+  background: #e5ded5;
+  transform: translateY(-50%);
+}
+
+@media (max-width: 640px) {
+  .countdown-item:not(:last-child)::after {
+    display: none;
+  }
+}
+
+/* -----------------------------------------
+   YAVAŞ ANİMASYONLAR
+----------------------------------------- */
+
+@keyframes gentleFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+@keyframes softFloat {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(10px, -14px);
+  }
+}
+
+/* -----------------------------------------
+   REDUCED MOTION
+----------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+} 
+/* =========================================================
+   ORGANİK ARKA PLAN KATMANLARI
+   ========================================================= */
+
+.layered-section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* Ana renk geçişi */
+.layered-section::before {
+  content: "";
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+
+  background:
+    radial-gradient(
+      ellipse at 15% 35%,
+      rgba(168, 178, 160, 0.10) 0%,
+      transparent 38%
+    ),
+    radial-gradient(
+      ellipse at 85% 65%,
+      rgba(232, 211, 202, 0.16) 0%,
+      transparent 42%
+    );
+}
+
+/* İnce organik sınır */
+.layered-section::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+
+  left: -10%;
+  right: -10%;
+  top: 48%;
+
+  height: 160px;
+
+  background:
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(232, 211, 202, 0.16) 45%,
+      rgba(242, 238, 230, 0.35) 55%,
+      transparent 100%
+    );
+
+  transform: rotate(-2deg);
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   DAHA İNCE BİR İKİNCİ KATMAN
+   ========================================================= */
+
+.layered-soft {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.layered-soft::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+
+  width: 120%;
+  height: 220px;
+
+  left: -10%;
+  top: 15%;
+
+  background:
+    linear-gradient(
+      175deg,
+      transparent 0%,
+      rgba(168, 178, 160, 0.07) 42%,
+      rgba(168, 178, 160, 0.10) 50%,
+      transparent 72%
+    );
+
+  transform: rotate(1.5deg);
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   PUDRA KATMAN
+   ========================================================= */
+
+.layered-blush {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.layered-blush::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+
+  width: 130%;
+  height: 180px;
+
+  left: -15%;
+  bottom: 12%;
+
+  background:
+    linear-gradient(
+      178deg,
+      transparent 15%,
+      rgba(232, 211, 202, 0.12) 45%,
+      rgba(232, 211, 202, 0.17) 52%,
+      transparent 78%
+    );
+
+  transform: rotate(-1deg);
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   ÇOK İNCE SINIR ÇİZGİSİ
+   ========================================================= */
+
+.soft-border {
+  position: relative;
+}
+
+.soft-border::after {
+  content: "";
+  position: absolute;
+
+  left: 8%;
+  right: 8%;
+  bottom: 0;
+
+  height: 1px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(216, 200, 189, 0.35),
+    rgba(216, 200, 189, 0.55),
+    rgba(216, 200, 189, 0.35),
+    transparent
+  );
+
+  pointer-events: none;
+}
+/* =========================================================
+   DOĞAL BOTANİK ARKA PLAN
+   ========================================================= */
+
+.decor-branch,
+.decor-leaf {
+  position: absolute;
+  color: #a8b2a0;
+  opacity: 0.17;
+}
+
+.decor-branch-top-left {
+  width: 360px;
+  height: 220px;
+  top: -10px;
+  left: -20px;
+  transform: rotate(-4deg);
+}
+
+.decor-branch-bottom-right {
+  width: 360px;
+  height: 260px;
+  right: -25px;
+  bottom: -15px;
+  color: #b79d91;
+  opacity: 0.14;
+  transform: rotate(3deg);
+}
+
+.decor-leaf {
+  width: 65px;
+  height: 85px;
+}
+
+.decor-leaf-left {
+  left: 5%;
+  top: 48%;
+  color: #a8b2a0;
+  opacity: 0.11;
+  transform: rotate(-28deg);
+}
+
+.decor-leaf-right {
+  right: 5%;
+  top: 35%;
+  color: #b79d91;
+  opacity: 0.10;
+  transform: rotate(25deg);
+}
+
+
+/* =========================================================
+   PETALLER
+   ========================================================= */
+
+.decor-petal {
+  position: absolute;
+  width: 9px;
+  height: 19px;
+  border-radius: 100% 0 100% 0;
+  background: #d9bdb3;
+  opacity: 0.18;
+  transform: rotate(35deg);
+}
+
+.decor-petal-1 {
+  top: 24%;
+  left: 17%;
+}
+
+.decor-petal-2 {
+  top: 62%;
+  right: 18%;
+  transform: rotate(115deg);
+}
+
+.decor-petal-3 {
+  top: 72%;
+  left: 12%;
+  transform: rotate(70deg);
+  opacity: 0.12;
+}
+
+.decor-petal-4 {
+  top: 18%;
+  right: 13%;
+  transform: rotate(145deg);
+  opacity: 0.12;
+}
+
+
+/* =========================================================
+   ÇOK HAFİF PUDRA IŞIKLARI
+   ========================================================= */
+
+.decor-blush {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(55px);
+  pointer-events: none;
+}
+
+.decor-blush-1 {
+  width: 260px;
+  height: 180px;
+  top: 32%;
+  right: -100px;
+  background: rgba(232, 211, 202, 0.15);
+}
+
+.decor-blush-2 {
+  width: 220px;
+  height: 170px;
+  bottom: 18%;
+  left: -90px;
+  background: rgba(168, 178, 160, 0.10);
+}
+
+
+/* =========================================================
+   HAFİF HAREKET
+   ========================================================= */
+
+.decor-branch-top-left {
+  animation: branchFloat 12s ease-in-out infinite;
+}
+
+.decor-branch-bottom-right {
+  animation: branchFloatReverse 15s ease-in-out infinite;
+}
+
+.decor-petal-1,
+.decor-petal-3 {
+  animation: petalFloat 9s ease-in-out infinite;
+}
+
+.decor-petal-2,
+.decor-petal-4 {
+  animation: petalFloat 12s ease-in-out infinite;
+  animation-delay: -4s;
+}
+
+@keyframes branchFloat {
+  0%,
+  100% {
+    transform: rotate(-4deg) translate(0, 0);
+  }
+
+  50% {
+    transform: rotate(-2deg) translate(4px, 5px);
+  }
+}
+
+@keyframes branchFloatReverse {
+  0%,
+  100% {
+    transform: rotate(3deg) translate(0, 0);
+  }
+
+  50% {
+    transform: rotate(1deg) translate(-4px, -5px);
+  }
+}
+
+@keyframes petalFloat {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(35deg);
+  }
+
+  50% {
+    transform: translate(5px, -8px) rotate(42deg);
+  }
+}
+
+
+/* Mobilde dekorasyonu biraz azalt */
+@media (max-width: 768px) {
+  .decor-branch {
+    opacity: 0.09;
+  }
+
+  .decor-leaf {
+    opacity: 0.07;
+  }
+
+  .decor-petal {
+    opacity: 0.10;
+  }
+
+  .decor-branch-top-left {
+    width: 260px;
+  }
+
+  .decor-branch-bottom-right {
+    width: 270px;
+  }
+}
+/* =========================================================
+   EK BOTANİK DALLAR
+   ========================================================= */
+
+.decor-branch-middle-left {
+  width: 150px;
+  height: 220px;
+  left: -15px;
+  top: 43%;
+  color: #a8b2a0;
+  opacity: 0.10;
+  transform: rotate(-8deg);
+}
+
+.decor-branch-middle-right {
+  width: 150px;
+  height: 220px;
+  right: -15px;
+  top: 67%;
+  color: #b79d91;
+  opacity: 0.09;
+  transform: rotate(8deg);
+}
+
+
+/* =========================================================
+   EK YAPRAKLAR
+   ========================================================= */
+
+.decor-leaf-bottom-left {
+  left: 18%;
+  bottom: 8%;
+  width: 55px;
+  height: 75px;
+  color: #a8b2a0;
+  opacity: 0.08;
+  transform: rotate(-25deg);
+}
+
+.decor-leaf-top-right {
+  right: 18%;
+  top: 10%;
+  width: 55px;
+  height: 75px;
+  color: #b79d91;
+  opacity: 0.08;
+  transform: rotate(25deg);
+}
+
+
+/* =========================================================
+   DAHA FAZLA PETAL
+   ========================================================= */
+
+.decor-petal-5 {
+  top: 41%;
+  left: 27%;
+  transform: rotate(125deg);
+  opacity: 0.10;
+}
+
+.decor-petal-6 {
+  top: 79%;
+  right: 28%;
+  transform: rotate(20deg);
+  opacity: 0.09;
+}
+
+
+/* =========================================================
+   ÜÇÜNCÜ YUMUŞAK IŞIK
+   ========================================================= */
+
+.decor-blush-3 {
+  width: 280px;
+  height: 190px;
+  top: 54%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(232, 211, 202, 0.07);
+}
