@@ -3,6 +3,7 @@ import BackgroundDecor from "@/components/BackgroundDecor";
 import PhotoUpload from "@/components/PhotoUpload";
 import PhotoGallery from "@/components/PhotoGallery";
 import Countdown from "@/components/Countdown";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -228,9 +229,13 @@ Pendik / İstanbul`}
           Sizi aramızda görmekten mutluluk duyarız.
         </p>
 
-        <p className="mt-8 font-serif text-2xl text-[#b38e83]">
-          ♡
-        </p>
+        <Link
+  href="/admin/login"
+  aria-label="Yönetici girişi"
+  className="mt-8 inline-block font-serif text-2xl text-[#b38e83] transition-all duration-300 hover:-translate-y-1 hover:opacity-70"
+>
+  ♡
+</Link>
 
       </footer>
      

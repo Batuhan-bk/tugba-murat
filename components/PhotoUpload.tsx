@@ -16,6 +16,42 @@ export default function PhotoUpload() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Modal açıkken arka plandaki sayfanın scroll olmasını tamamen engelle
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const scrollY = window.scrollY;
+    const body = document.body;
+    const html = document.documentElement;
+
+    // Mevcut scroll konumunu koru
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+
+    // Overscroll / bounce davranışını kapat
+    html.style.overscrollBehavior = "none";
+    body.style.overscrollBehavior = "none";
+
+    return () => {
+      // Modal kapanınca eski stilleri temizle
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.width = "";
+
+      html.style.overscrollBehavior = "";
+      body.style.overscrollBehavior = "";
+
+      // Kullanıcıyı modal açılmadan önceki yere geri getir
+      window.scrollTo(0, scrollY);
+    };
+  }, [isOpen]);
+
+  // Preview URL'sini temizle
   useEffect(() => {
     return () => {
       if (preview) {
@@ -146,27 +182,29 @@ export default function PhotoUpload() {
           upsert: false,
           contentType: "image/jpeg",
         });
-        
 
       if (uploadError) {
         throw uploadError;
       }
-const { error: databaseError } = await supabase
-  .from("photos")
-  .insert({
-    storage_path: filePath,
-    status: "pending",
-  });
 
-if (databaseError) {
-  throw new Error(
-    `DATABASE ERROR
-Mesaj: ${databaseError.message}
-Detay: ${databaseError.details}
-Hint: ${databaseError.hint}
-Kod: ${databaseError.code}`
-  );
-}
+      const { error: databaseError } = await supabase
+        .from("photos")
+        .insert({
+          storage_path: filePath,
+          status: "pending",
+        });
+
+      if (databaseError) {
+        console.error("DATABASE ERROR:", {
+          message: databaseError.message,
+          details: databaseError.details,
+          hint: databaseError.hint,
+          code: databaseError.code,
+        });
+
+        throw databaseError;
+      }
+
       setMessage(
         "Fotoğrafınız bize ulaştı. Onaylandıktan sonra anı galerimizde yerini alacak."
       );
@@ -218,18 +256,22 @@ Kod: ${databaseError.code}`
 
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#403a36]/30 px-5 backdrop-blur-sm"
-          onClick={handleClose}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#403a36]/30 px-5 backdrop-blur-sm overscroll-none"
+          onTouchMove={(event) => event.stopPropagation()}
+          onWheel={(event) => event.stopPropagation()}
         >
           <div
-            className="relative w-full max-w-md rounded-[28px] border border-[#e5ded5] bg-[#faf8f3] p-7 shadow-[0_25px_80px_rgba(70,55,45,0.18)] sm:p-9"
+            className="relative max-h-[90vh] w-full max-w-md overflow-y-auto overscroll-contain rounded-[28px] border border-[#e5ded5] bg-[#faf8f3] p-7 shadow-[0_25px_80px_rgba(70,55,45,0.18)] sm:p-9"
             onClick={(event) => event.stopPropagation()}
+            onTouchMove={(event) => event.stopPropagation()}
+            onWheel={(event) => event.stopPropagation()}
           >
+            {/* SADECE BU X BUTONU MODALI KAPATIR */}
             <button
               type="button"
               onClick={handleClose}
               disabled={isUploading}
-              className="absolute right-5 top-5 text-2xl font-light text-[#9a8c82] transition-colors hover:text-[#6f625a]"
+              className="absolute right-5 top-5 z-10 text-2xl font-light text-[#9a8c82] transition-colors hover:text-[#6f625a] disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Kapat"
             >
               ×
@@ -292,6 +334,7 @@ Kod: ${databaseError.code}`
                 <div className="mt-6 flex gap-3">
                   <label className="flex-1 cursor-pointer rounded-full border border-[#d7c8bf] bg-transparent px-5 py-3 text-center text-sm text-[#6f625a] transition-colors hover:bg-[#f2eee6]">
                     Fotoğrafı Değiştir
+
                     <input
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
