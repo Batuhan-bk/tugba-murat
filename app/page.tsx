@@ -217,15 +217,11 @@ Pendik / İstanbul`}
           ❧
         </div>
 
-        <p className="font-serif text-4xl text-[#403a36] sm:text-5xl">
-          Tuğba & Murat
-        </p>
-
         <div className="botanical-divider">
           <span>♡</span>
         </div>
 
-        <p className="mt-5 text-sm text-[#99918a]">
+        <p className="mt-5 text-md text-[#99918a]">
           Sizi aramızda görmekten mutluluk duyarız.
         </p>
 
