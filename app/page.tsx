@@ -87,9 +87,7 @@ export default function Home() {
           {/* Tarih */}
           <div className="mt-14">
 
-            <p className="text-xs uppercase tracking-[0.3em] text-[#a18f86]">
-              18 Ekim 2026 · Pazar
-            </p>
+       
 
             <p className="mt-3 font-serif text-2xl text-[#403a36] sm:text-3xl">
               Güzel bir gün bizi bekliyor
