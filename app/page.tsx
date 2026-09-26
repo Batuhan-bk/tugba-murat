@@ -63,7 +63,7 @@ export default function Home() {
               <div className="relative aspect-[4/3] overflow-hidden rounded-[145px]">
 
                 <Image
-                  src="/images/tugba-murat.jpeg"
+                  src="/images/tugba-murat.jpg"
                   alt="Tuğba ve Murat"
                   fill
                   priority
