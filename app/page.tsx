@@ -1,3 +1,4 @@
+import Image from "next/image";
 import EventEnvelope from "@/components/EventEnvelope";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import PhotoUpload from "@/components/PhotoUpload";
@@ -9,15 +10,12 @@ export default function Home() {
   return (
     <main className="paper-texture relative min-h-screen overflow-hidden text-[#403a36]">
 
-  <BackgroundDecor />
-
-  {/* HERO */}
-      
+      <BackgroundDecor />
 
       {/* =====================================================
           HERO
       ===================================================== */}
-      <section className=" soft-section relative flex min-h-screen flex-col items-center justify-center px-6 py-24 text-center">
+      <section className="soft-section relative flex min-h-screen flex-col items-center justify-center px-6 py-24 text-center">
 
         {/* Arka plandaki yumuşak ışıklar */}
         <div className="hero-glow hero-glow-left" />
@@ -27,7 +25,6 @@ export default function Home() {
         <div className="floating-detail absolute left-[8%] top-[22%] hidden text-3xl text-[#a8b2a0]/50 md:block">
           ❧
         </div>
-        
 
         <div className="floating-detail-slow absolute right-[9%] bottom-[20%] hidden -rotate-12 text-3xl text-[#a8b2a0]/40 md:block">
           ❧
@@ -52,23 +49,46 @@ export default function Home() {
             mutluluk duyuyoruz.
           </p>
 
-          {/* Fotoğraf alanı */}
-          <div className="hero-photo mx-auto mt-14 aspect-[4/5] w-full max-w-sm overflow-hidden rounded-[200px] bg-[#e8e3dc] shadow-[0_20px_50px_rgba(80,65,55,0.08)]">
+          {/* =====================================================
+              HERO FOTOĞRAF
+          ===================================================== */}
+          <div className="relative mx-auto mt-14 w-full max-w-[520px]">
 
-            {/* Daha sonra gerçek fotoğraf gelecek */}
+            {/* Yumuşak dış ışık */}
+            <div className="absolute -inset-5 rounded-[160px] bg-[#e8d3ca]/20 blur-3xl" />
 
-            <div className="flex h-full items-center justify-center">
-              <p className="text-xs uppercase tracking-[0.25em] text-[#a69b92]">
-                Fotoğraf
-              </p>
+            {/* Fotoğraf çerçevesi */}
+            <div className="relative rounded-[155px] border border-[#d8c8bd]/70 bg-[#f2eee6] p-2 shadow-[0_25px_60px_rgba(80,65,55,0.10)]">
+
+              <div className="relative aspect-[4/3] overflow-hidden rounded-[145px]">
+
+                <Image
+                  src="/images/tugba-murat.jpeg"
+                  alt="Tuğba ve Murat"
+                  fill
+                  priority
+                  sizes="(max-width: 640px) 90vw, 520px"
+                  className="object-cover object-center transition-transform duration-700 hover:scale-[1.02]"
+                />
+
+                {/* Fotoğraf üzerine çok hafif sıcak ışık */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#403a36]/10 via-transparent to-[#fff8f2]/10" />
+
+              </div>
+            </div>
+
+            {/* Fotoğraf altındaki küçük botanik detay */}
+            <div className="pointer-events-none absolute -bottom-5 left-1/2 -translate-x-1/2 text-xl text-[#b9aa9f]/70">
+              ❦
             </div>
 
           </div>
 
+          {/* Tarih */}
           <div className="mt-14">
 
             <p className="text-xs uppercase tracking-[0.3em] text-[#a18f86]">
-              Çok yakında
+              18 Ekim 2026 · Pazar
             </p>
 
             <p className="mt-3 font-serif text-2xl text-[#403a36] sm:text-3xl">
@@ -84,13 +104,13 @@ export default function Home() {
       {/* =====================================================
           COUNTDOWN
       ===================================================== */}
-      
-      <section className=" soft-border relative border-y border-[#e5ded5] bg-[#f2eee6]/45 px-6 py-24">
+
+      <section className="soft-border relative border-y border-[#e5ded5] bg-[#f2eee6]/45 px-6 py-24">
 
         <div className="mx-auto max-w-4xl text-center">
 
           <p className="text-xs uppercase tracking-[0.3em] text-[#9a8c82]">
-            Düğünümüze 
+            Düğünümüze
           </p>
 
           <h2 className="mt-4 font-serif text-4xl text-[#403a36] sm:text-5xl">
@@ -102,13 +122,15 @@ export default function Home() {
           </div>
 
           <Countdown />
-          </div>
+
+        </div>
       </section>
 
 
       {/* =====================================================
           DAVETİYELER
       ===================================================== */}
+
       <section className="soft-section relative px-6 py-28">
 
         {/* Çok hafif arka plan süsleri */}
@@ -125,7 +147,6 @@ export default function Home() {
           {/* Başlık */}
           <div className="text-center">
 
-            
             <h2 className="mt-4 font-serif text-5xl text-[#403a36] sm:text-6xl">
               Davetiyelerimiz
             </h2>
@@ -149,7 +170,7 @@ export default function Home() {
               title="Kına"
               date="16 Ekim 2026"
               time="Cuma - 19:00"
-              location={`-TÜTÜNÇİFTLİK KÜLTÜR MERKEZİ-
+              location={`TÜTÜNÇİFTLİK KÜLTÜR MERKEZİ
 Güney Mh. Adnan Kahveci Cd. No: 6
 Körfez / Kocaeli`}
             />
@@ -158,7 +179,7 @@ Körfez / Kocaeli`}
               title="Düğün"
               date="18 Ekim 2026"
               time="Pazar - 13:00"
-              location={`-ÖZLEM DÜĞÜN SALONU-
+              location={`ÖZLEM DÜĞÜN SALONU
 Fevzi Çakmak Mh. Mimar Sinan Cd.
 Bora Sk. No: 2
 Pendik / İstanbul`}
@@ -173,7 +194,8 @@ Pendik / İstanbul`}
       {/* =====================================================
           ANILAR
       ===================================================== */}
-      <section className=" relative overflow-hidden bg-[#eee4dd] px-6 py-28">
+
+      <section className="relative overflow-hidden bg-[#eee4dd] px-6 py-28">
 
         {/* Dekoratif kurdele hissi */}
         <div className="pointer-events-none absolute left-1/2 top-0 h-20 w-px bg-[#d9c1b7]/60" />
@@ -185,20 +207,20 @@ Pendik / İstanbul`}
           </p>
 
           <h2 className="mt-5 font-serif text-5xl text-[#403a36] sm:text-6xl">
-           -Sizde bir anı bırakın-
+            -Sizde bir anı bırakın-
           </h2>
 
           <div className="botanical-divider">
             <span>❦</span>
           </div>
 
-          <p className="mx-auto mt-7 max-w-md text-sm leading-7 text-[#6f625a] ">
+          <p className="mx-auto mt-7 max-w-md text-sm leading-7 text-[#6f625a]">
             Bu güzel günümüzden sizin de bir hatıranız olsun.
             Çektiğiniz fotoğrafları bizimle paylaşabilirsiniz.
           </p>
 
-       <PhotoUpload />
-       <PhotoGallery />
+          <PhotoUpload />
+          <PhotoGallery />
 
         </div>
       </section>
@@ -207,6 +229,7 @@ Pendik / İstanbul`}
       {/* =====================================================
           FOOTER
       ===================================================== */}
+
       <footer className="relative overflow-hidden px-6 py-24 text-center">
 
         <div className="floating-detail pointer-events-none absolute left-[15%] top-[35%] hidden text-4xl text-[#a8b2a0]/20 sm:block">
@@ -226,15 +249,14 @@ Pendik / İstanbul`}
         </p>
 
         <Link
-  href="/admin/login"
-  aria-label="Yönetici girişi"
-  className="mt-8 inline-block font-serif text-2xl text-[#b38e83] transition-all duration-300 hover:-translate-y-1 hover:opacity-70"
->
-  ♡
-</Link>
+          href="/admin/login"
+          aria-label="Yönetici girişi"
+          className="mt-8 inline-block font-serif text-2xl text-[#b38e83] transition-all duration-300 hover:-translate-y-1 hover:opacity-70"
+        >
+          ♡
+        </Link>
 
       </footer>
-     
 
     </main>
   );
