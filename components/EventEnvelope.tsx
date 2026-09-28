@@ -98,7 +98,7 @@ export default function EventEnvelope({
               duration: 0.9,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="absolute inset-x-0 top-0 z-30 h-[240px] origin-top"
+           className="pointer-events-none absolute inset-x-0 top-0 z-30 h-[240px] origin-top"
             style={{
               transformStyle: "preserve-3d",
               clipPath: "polygon(0 0, 100% 0, 50% 100%)",
