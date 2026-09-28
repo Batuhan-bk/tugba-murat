@@ -52,7 +52,7 @@ export default function EventEnvelope({
               delay: 0.35,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="absolute left-1/2 top-8 z-10 w-[310px] min-h-[430px] -translate-x-1/2 rounded-sm bg-[#faf8f3] px-8 py-12 text-center shadow-[0_15px_35px_rgba(80,65,55,0.14)]"
+            className="pointer-events-auto absolute left-1/2 top-8 z-50 w-[310px] min-h-[430px] -translate-x-1/2 rounded-sm bg-[#faf8f3] px-8 py-12 text-center shadow-[0_15px_35px_rgba(80,65,55,0.14)]"
           >
             <p className="text-xs uppercase tracking-[0.25em] text-[#9a8c82]">
               {title}
@@ -78,7 +78,7 @@ export default function EventEnvelope({
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-8 inline-block text-xs tracking-wider text-[#6f625a] underline underline-offset-4 transition-all duration-300 hover:-translate-y-0.5 hover:opacity-60"
+              className="relative z-[60] mt-8 inline-block cursor-pointer text-xs tracking-wider text-[#6f625a] underline underline-offset-4 transition-all duration-300 hover:-translate-y-0.5 hover:opacity-60"
             >
               Konumu Gör
             </a>
@@ -98,7 +98,7 @@ export default function EventEnvelope({
               duration: 0.9,
               ease: [0.22, 1, 0.36, 1],
             }}
-           className="pointer-events-none absolute inset-x-0 top-0 z-30 h-[240px] origin-top"
+            className="pointer-events-none absolute inset-x-0 top-0 z-30 h-[240px] origin-top"
             style={{
               transformStyle: "preserve-3d",
               clipPath: "polygon(0 0, 100% 0, 50% 100%)",
@@ -110,7 +110,7 @@ export default function EventEnvelope({
 
           {/* Alt kapak */}
           <div
-            className="absolute inset-x-0 bottom-0 z-20 h-[185px] bg-[#f2eee6]"
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[185px] bg-[#f2eee6]"
             style={{
               clipPath:
                 "polygon(0 0, 50% 52%, 100% 0, 100% 100%, 0 100%)",
@@ -134,7 +134,7 @@ export default function EventEnvelope({
               duration: 0.35,
               delay: 0.15,
             }}
-            className="absolute left-1/2 top-1/2 z-40 -translate-x-1/2 -translate-y-1/2"
+            className="pointer-events-none absolute left-1/2 top-1/2 z-40 -translate-x-1/2 -translate-y-1/2"
           >
             <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-[#d99f91] bg-[#e8d3ca] shadow-sm">
               <span className="font-serif text-3xl text-[#9a7066]">
