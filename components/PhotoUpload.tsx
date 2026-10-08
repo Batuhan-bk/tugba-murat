@@ -3,6 +3,7 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+const MAX_FILES = 5;
 const MAX_FILE_SIZE = 30 * 1024 * 1024;
 const MAX_OUTPUT_SIZE = 6 * 1024 * 1024;
 const MAX_IMAGE_WIDTH = 2400;
@@ -10,8 +11,10 @@ const JPEG_QUALITY = 0.82;
 
 export default function PhotoUpload() {
   const [isOpen, setIsOpen] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
+
   const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -24,19 +27,16 @@ export default function PhotoUpload() {
     const body = document.body;
     const html = document.documentElement;
 
-    // Mevcut scroll konumunu koru
     body.style.position = "fixed";
     body.style.top = `-${scrollY}px`;
     body.style.left = "0";
     body.style.right = "0";
     body.style.width = "100%";
 
-    // Overscroll / bounce davranışını kapat
     html.style.overscrollBehavior = "none";
     body.style.overscrollBehavior = "none";
 
     return () => {
-      // Modal kapanınca eski stilleri temizle
       body.style.position = "";
       body.style.top = "";
       body.style.left = "";
@@ -46,47 +46,75 @@ export default function PhotoUpload() {
       html.style.overscrollBehavior = "";
       body.style.overscrollBehavior = "";
 
-      // Kullanıcıyı modal açılmadan önceki yere geri getir
       window.scrollTo(0, scrollY);
     };
   }, [isOpen]);
 
-  // Preview URL'sini temizle
+  // Preview URL'lerini component kapanırken temizle
   useEffect(() => {
     return () => {
-      if (preview) {
+      previews.forEach((preview) => {
         URL.revokeObjectURL(preview);
-      }
+      });
     };
-  }, [preview]);
+  }, [previews]);
+
+  // --------------------------------------------------
+  // FOTOĞRAF SEÇME
+  // --------------------------------------------------
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
+    const selectedFiles = Array.from(event.target.files ?? []);
 
     setError("");
     setMessage("");
 
-    if (!selectedFile) {
+    if (selectedFiles.length === 0) {
       return;
     }
 
-    if (!selectedFile.type.startsWith("image/")) {
-      setError("Lütfen bir fotoğraf seç.");
+    if (selectedFiles.length > MAX_FILES) {
+      setError(`En fazla ${MAX_FILES} fotoğraf seçebilirsiniz.`);
+      event.target.value = "";
       return;
     }
 
-    if (selectedFile.size > MAX_FILE_SIZE) {
-      setError("Fotoğraf en fazla 30 MB olabilir.");
-      return;
+    // Bütün dosyaları kontrol et
+    for (const selectedFile of selectedFiles) {
+      if (!selectedFile.type.startsWith("image/")) {
+        setError("Lütfen sadece fotoğraf dosyaları seçin.");
+        event.target.value = "";
+        return;
+      }
+
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        setError(
+          `"${selectedFile.name}" 30 MB'dan büyük. Lütfen daha küçük bir fotoğraf seçin.`
+        );
+        event.target.value = "";
+        return;
+      }
     }
 
-    if (preview) {
+    // Eski preview'ları temizle
+    previews.forEach((preview) => {
       URL.revokeObjectURL(preview);
-    }
+    });
 
-    setFile(selectedFile);
-    setPreview(URL.createObjectURL(selectedFile));
+    const newPreviews = selectedFiles.map((file) =>
+      URL.createObjectURL(file)
+    );
+
+    setFiles(selectedFiles);
+    setPreviews(newPreviews);
+
+    // Aynı dosyayı tekrar seçebilmek için input'u temizle
+    event.target.value = "";
   };
+
+  // --------------------------------------------------
+  // FOTOĞRAF SIKIŞTIRMA
+  // --------------------------------------------------
 
   const compressImage = async (originalFile: File): Promise<File> => {
     const imageUrl = URL.createObjectURL(originalFile);
@@ -96,7 +124,8 @@ export default function PhotoUpload() {
 
       await new Promise<void>((resolve, reject) => {
         image.onload = () => resolve();
-        image.onerror = () => reject(new Error("Fotoğraf okunamadı."));
+        image.onerror = () =>
+          reject(new Error("Fotoğraf okunamadı."));
         image.src = imageUrl;
       });
 
@@ -105,11 +134,13 @@ export default function PhotoUpload() {
 
       if (width > MAX_IMAGE_WIDTH) {
         const ratio = MAX_IMAGE_WIDTH / width;
+
         width = MAX_IMAGE_WIDTH;
         height = Math.round(height * ratio);
       }
 
       const canvas = document.createElement("canvas");
+
       canvas.width = width;
       canvas.height = height;
 
@@ -155,9 +186,13 @@ export default function PhotoUpload() {
     }
   };
 
+  // --------------------------------------------------
+  // FOTOĞRAFLARI GÖNDER
+  // --------------------------------------------------
+
   const handleUpload = async () => {
-    if (!file) {
-      setError("Önce bir fotoğraf seçmelisin.");
+    if (files.length === 0) {
+      setError("Önce en az bir fotoğraf seçmelisin.");
       return;
     }
 
@@ -165,34 +200,63 @@ export default function PhotoUpload() {
     setError("");
     setMessage("");
 
+    const uploadedPaths: string[] = [];
+
     try {
-      setMessage("Fotoğraf hazırlanıyor...");
+      const compressedFiles: File[] = [];
 
-      const compressedFile = await compressImage(file);
+      // Fotoğrafları tek tek sıkıştır
+      for (let i = 0; i < files.length; i++) {
+        setMessage(
+          `${i + 1} / ${files.length} fotoğraf hazırlanıyor...`
+        );
 
-      const fileName = `${crypto.randomUUID()}.jpg`;
-      const filePath = `pending/${fileName}`;
+        const compressedFile = await compressImage(files[i]);
 
-      setMessage("Fotoğraf gönderiliyor...");
-
-      const { error: uploadError } = await supabase.storage
-        .from("wedding-photos")
-        .upload(filePath, compressedFile, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: "image/jpeg",
-        });
-
-      if (uploadError) {
-        throw uploadError;
+        compressedFiles.push(compressedFile);
       }
+
+      // --------------------------------------------------
+      // STORAGE'A YÜKLE
+      // --------------------------------------------------
+
+      for (let i = 0; i < compressedFiles.length; i++) {
+        setMessage(
+          `${i + 1} / ${compressedFiles.length} fotoğraf gönderiliyor...`
+        );
+
+        const fileName = `${crypto.randomUUID()}.jpg`;
+        const filePath = `pending/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("wedding-photos")
+          .upload(filePath, compressedFiles[i], {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: "image/jpeg",
+          });
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        uploadedPaths.push(filePath);
+      }
+
+      // --------------------------------------------------
+      // DATABASE'E TOPLU KAYIT
+      // --------------------------------------------------
+
+      setMessage("Fotoğraflar kaydediliyor...");
+
+      const databaseRows = uploadedPaths.map((storagePath) => ({
+        storage_path: storagePath,
+        status: "pending",
+      }));
 
       const { error: databaseError } = await supabase
         .from("photos")
-        .insert({
-          storage_path: filePath,
-          status: "pending",
-        });
+        .insert(databaseRows);
 
       if (databaseError) {
         console.error("DATABASE ERROR:", {
@@ -205,44 +269,73 @@ export default function PhotoUpload() {
         throw databaseError;
       }
 
+      // --------------------------------------------------
+      // BAŞARILI
+      // --------------------------------------------------
+
       setMessage(
-        "Fotoğrafınız bize ulaştı. Onaylandıktan sonra anı galerimizde yerini alacak."
+        files.length === 1
+          ? "Fotoğrafınız bize ulaştı. Onaylandıktan sonra anı galerimizde yerini alacak."
+          : `${files.length} fotoğrafınız bize ulaştı. Onaylandıktan sonra anı galerimizde yerlerini alacaklar.`
       );
 
-      setFile(null);
+      // Seçimleri temizle
+      setFiles([]);
 
-      if (preview) {
+      previews.forEach((preview) => {
         URL.revokeObjectURL(preview);
-      }
+      });
 
-      setPreview(null);
+      setPreviews([]);
     } catch (uploadError) {
       console.error(uploadError);
+
+      // Storage'a yüklenmiş ama DB'ye kaydedilememiş dosyalar varsa temizle
+      if (uploadedPaths.length > 0) {
+        const { error: cleanupError } = await supabase.storage
+          .from("wedding-photos")
+          .remove(uploadedPaths);
+
+        if (cleanupError) {
+          console.error(
+            "STORAGE CLEANUP ERROR:",
+            cleanupError
+          );
+        }
+      }
 
       setMessage("");
 
       setError(
-        "Fotoğraf yüklenirken bir sorun oluştu. Lütfen tekrar deneyin."
+        "Fotoğraflar yüklenirken bir sorun oluştu. Lütfen tekrar deneyin."
       );
     } finally {
       setIsUploading(false);
     }
   };
 
+  // --------------------------------------------------
+  // MODALI KAPAT
+  // --------------------------------------------------
+
   const handleClose = () => {
     if (isUploading) return;
 
     setIsOpen(false);
-    setFile(null);
+    setFiles([]);
     setMessage("");
     setError("");
 
-    if (preview) {
+    previews.forEach((preview) => {
       URL.revokeObjectURL(preview);
-    }
+    });
 
-    setPreview(null);
+    setPreviews([]);
   };
+
+  // --------------------------------------------------
+  // RENDER
+  // --------------------------------------------------
 
   return (
     <>
@@ -266,7 +359,7 @@ export default function PhotoUpload() {
             onTouchMove={(event) => event.stopPropagation()}
             onWheel={(event) => event.stopPropagation()}
           >
-            {/* SADECE BU X BUTONU MODALI KAPATIR */}
+            {/* KAPAT */}
             <button
               type="button"
               onClick={handleClose}
@@ -277,6 +370,7 @@ export default function PhotoUpload() {
               ×
             </button>
 
+            {/* BAŞLIK */}
             <div className="text-center">
               <p className="text-xs uppercase tracking-[0.3em] text-[#9a8c82]">
                 Güzel bir anı
@@ -291,53 +385,83 @@ export default function PhotoUpload() {
               </div>
 
               <p className="mx-auto mt-5 max-w-sm text-sm leading-7 text-[#77716b]">
-                Bu güzel günden çektiğiniz bir fotoğrafı bizimle
-                paylaşabilirsiniz.
+                Bu güzel günden çektiğiniz fotoğrafları
+                bizimle paylaşabilirsiniz.
               </p>
             </div>
 
-            {!preview && !message && (
+            {/* =================================================
+                FOTOĞRAF SEÇME
+            ================================================= */}
+
+            {files.length === 0 && !message && (
               <label className="mt-8 flex cursor-pointer flex-col items-center justify-center rounded-[22px] border border-dashed border-[#d7c8bf] bg-[#f2eee6]/60 px-6 py-12 text-center transition-colors hover:bg-[#f2eee6]">
-                <span className="text-3xl text-[#b79d91]">♡</span>
+                <span className="text-3xl text-[#b79d91]">
+                  ♡
+                </span>
 
                 <span className="mt-4 font-serif text-2xl text-[#6f625a]">
                   Fotoğraf seç
                 </span>
 
-                <span className="mt-2 text-xs text-[#9a8c82]">
-                  JPG, PNG veya WEBP · Maksimum 30 MB
+                <span className="mt-2 text-xs leading-5 text-[#9a8c82]">
+                  Tek veya birden fazla fotoğraf seçebilirsiniz.
+                  <br />
+                  En fazla 5 fotoğraf · Maksimum 30 MB / fotoğraf
                 </span>
 
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
+                  multiple
                   onChange={handleFileChange}
                   className="hidden"
                 />
               </label>
             )}
 
-            {preview && !message && (
+            {/* =================================================
+                SEÇİLEN FOTOĞRAFLAR
+            ================================================= */}
+
+            {files.length > 0 && !message && (
               <div className="mt-8">
-                <div className="overflow-hidden rounded-[22px] bg-[#eee7df]">
-                  <img
-                    src={preview}
-                    alt="Seçilen fotoğraf"
-                    className="max-h-[380px] w-full object-contain"
-                  />
+                {/* FOTOĞRAF GRID */}
+                <div className="grid grid-cols-2 gap-3">
+                  {previews.map((preview, index) => (
+                    <div
+                      key={preview}
+                      className="relative overflow-hidden rounded-[18px] bg-[#eee7df]"
+                    >
+                      <img
+                        src={preview}
+                        alt={`Seçilen fotoğraf ${index + 1}`}
+                        className="aspect-square w-full object-cover"
+                      />
+
+                      <div className="absolute bottom-2 left-2 rounded-full bg-[#403a36]/60 px-2.5 py-1 text-[10px] text-white backdrop-blur-sm">
+                        {index + 1} / {files.length}
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
-                <p className="mt-4 truncate text-center text-xs text-[#9a8c82]">
-                  {file?.name}
+                {/* DOSYA SAYISI */}
+                <p className="mt-4 text-center text-xs text-[#9a8c82]">
+                  {files.length === 1
+                    ? "1 fotoğraf seçildi"
+                    : `${files.length} fotoğraf seçildi`}
                 </p>
 
+                {/* BUTONLAR */}
                 <div className="mt-6 flex gap-3">
-                  <label className="flex-1 cursor-pointer rounded-full border border-[#d7c8bf] bg-transparent px-5 py-3 text-center text-sm text-[#6f625a] transition-colors hover:bg-[#f2eee6]">
-                    Fotoğrafı Değiştir
+                  <label className="flex-1 cursor-pointer rounded-full border border-[#d7c8bf] bg-transparent px-4 py-3 text-center text-sm text-[#6f625a] transition-colors hover:bg-[#f2eee6]">
+                    Değiştir
 
                     <input
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
+                      multiple
                       onChange={handleFileChange}
                       className="hidden"
                     />
@@ -347,24 +471,32 @@ export default function PhotoUpload() {
                     type="button"
                     onClick={handleUpload}
                     disabled={isUploading}
-                    className="flex-1 rounded-full bg-[#b79d91] px-5 py-3 text-sm text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#a88d82] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex-1 rounded-full bg-[#b79d91] px-4 py-3 text-sm text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#a88d82] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {isUploading ? "Gönderiliyor..." : "Fotoğrafı Gönder"}
+                    {isUploading
+                      ? "Gönderiliyor..."
+                      : files.length === 1
+                        ? "Fotoğrafı Gönder"
+                        : `${files.length} Fotoğrafı Gönder`}
                   </button>
                 </div>
               </div>
             )}
 
+            {/* =================================================
+                BAŞARILI
+            ================================================= */}
+
             {message && (
               <div className="mt-8 rounded-[22px] bg-[#e9eee6] px-6 py-8 text-center">
-                <div className="text-3xl text-[#8d9b85]">♡</div>
+                <div className="text-3xl text-[#8d9b85]">
+                  ♡
+                </div>
 
                 <p className="mt-4 font-serif text-2xl text-[#403a36]">
-                  {message === "Fotoğraf hazırlanıyor..."
-                    ? "Fotoğraf hazırlanıyor"
-                    : message === "Fotoğraf gönderiliyor..."
-                      ? "Fotoğraf gönderiliyor"
-                      : "Teşekkür ederiz"}
+                  {isUploading
+                    ? "Fotoğraflar hazırlanıyor"
+                    : "Teşekkür ederiz"}
                 </p>
 
                 <p className="mt-3 text-sm leading-7 text-[#6f625a]">
@@ -383,8 +515,12 @@ export default function PhotoUpload() {
               </div>
             )}
 
+            {/* =================================================
+                HATA
+            ================================================= */}
+
             {error && (
-              <p className="mt-5 text-center text-sm text-[#a16f68]">
+              <p className="mt-5 text-center text-sm leading-6 text-[#a16f68]">
                 {error}
               </p>
             )}
