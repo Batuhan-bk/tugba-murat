@@ -19,6 +19,8 @@ export default function AdminPhotosPage() {
   const [actionLoading, setActionLoading] = useState<number | null>(null);
 
   useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
     const checkAuth = async () => {
       const {
         data: { user },
@@ -29,10 +31,201 @@ export default function AdminPhotosPage() {
         return;
       }
 
-      loadPhotos();
+      // İlk açılışta mevcut fotoğrafları yükle
+      await loadPhotos();
+
+      // ==========================================
+      // SUPABASE REALTIME
+      // ==========================================
+
+      channel = supabase
+        .channel("admin-photos-realtime")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "photos",
+          },
+          async (payload) => {
+            console.log("REALTIME INSERT:", payload);
+
+            const newPhoto = payload.new as Photo;
+
+            // Sadece pending fotoğrafları admin listesine ekle
+            if (newPhoto.status !== "pending") {
+              return;
+            }
+
+            const signedUrl = await createSignedUrl(
+              newPhoto.storage_path
+            );
+
+            const photoWithUrl: Photo = {
+              ...newPhoto,
+              signedUrl,
+            };
+
+            setPhotos((currentPhotos) => {
+              // Aynı fotoğraf zaten varsa tekrar ekleme
+              if (
+                currentPhotos.some(
+                  (photo) => photo.id === photoWithUrl.id
+                )
+              ) {
+                return currentPhotos;
+              }
+
+              return [photoWithUrl, ...currentPhotos];
+            });
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "photos",
+          },
+          async (payload) => {
+            console.log("REALTIME UPDATE:", payload);
+
+            const updatedPhoto = payload.new as Photo;
+
+            // ==========================================
+            // FOTOĞRAF ONAYLANDI
+            // ==========================================
+
+            if (updatedPhoto.status === "approved") {
+              const signedUrl = await createSignedUrl(
+                updatedPhoto.storage_path
+              );
+
+              const approvedPhoto: Photo = {
+                ...updatedPhoto,
+                signedUrl,
+              };
+
+              // Pending listesinden çıkar
+              setPhotos((currentPhotos) =>
+                currentPhotos.filter(
+                  (photo) => photo.id !== updatedPhoto.id
+                )
+              );
+
+              // Approved listesine ekle / güncelle
+              setApprovedPhotos((currentPhotos) => {
+                const exists = currentPhotos.some(
+                  (photo) => photo.id === updatedPhoto.id
+                );
+
+                if (exists) {
+                  return currentPhotos.map((photo) =>
+                    photo.id === updatedPhoto.id
+                      ? approvedPhoto
+                      : photo
+                  );
+                }
+
+                return [approvedPhoto, ...currentPhotos];
+              });
+
+              return;
+            }
+
+            // ==========================================
+            // FOTOĞRAF TEKRAR PENDING OLDU
+            // ==========================================
+
+            if (updatedPhoto.status === "pending") {
+              const signedUrl = await createSignedUrl(
+                updatedPhoto.storage_path
+              );
+
+              const pendingPhoto: Photo = {
+                ...updatedPhoto,
+                signedUrl,
+              };
+
+              // Approved listesinden çıkar
+              setApprovedPhotos((currentPhotos) =>
+                currentPhotos.filter(
+                  (photo) => photo.id !== updatedPhoto.id
+                )
+              );
+
+              // Pending listesine ekle / güncelle
+              setPhotos((currentPhotos) => {
+                const exists = currentPhotos.some(
+                  (photo) => photo.id === updatedPhoto.id
+                );
+
+                if (exists) {
+                  return currentPhotos.map((photo) =>
+                    photo.id === updatedPhoto.id
+                      ? pendingPhoto
+                      : photo
+                  );
+                }
+
+                return [pendingPhoto, ...currentPhotos];
+              });
+
+              return;
+            }
+
+            // Başka bir status geldiyse iki listeden de kaldır
+            setPhotos((currentPhotos) =>
+              currentPhotos.filter(
+                (photo) => photo.id !== updatedPhoto.id
+              )
+            );
+
+            setApprovedPhotos((currentPhotos) =>
+              currentPhotos.filter(
+                (photo) => photo.id !== updatedPhoto.id
+              )
+            );
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "DELETE",
+            schema: "public",
+            table: "photos",
+          },
+          (payload) => {
+            console.log("REALTIME DELETE:", payload);
+
+            const deletedPhoto = payload.old as Photo;
+
+            // Her iki listeden de kaldır
+            setPhotos((currentPhotos) =>
+              currentPhotos.filter(
+                (photo) => photo.id !== deletedPhoto.id
+              )
+            );
+
+            setApprovedPhotos((currentPhotos) =>
+              currentPhotos.filter(
+                (photo) => photo.id !== deletedPhoto.id
+              )
+            );
+          }
+        )
+        .subscribe((status) => {
+          console.log("ADMIN REALTIME STATUS:", status);
+        });
     };
 
     checkAuth();
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
   }, []);
 
   const createSignedUrl = async (storagePath: string) => {
@@ -67,7 +260,9 @@ export default function AdminPhotosPage() {
 
     const photosWithUrls = await Promise.all(
       (data ?? []).map(async (photo) => {
-        const signedUrl = await createSignedUrl(photo.storage_path);
+        const signedUrl = await createSignedUrl(
+          photo.storage_path
+        );
 
         return {
           ...photo,
@@ -77,11 +272,15 @@ export default function AdminPhotosPage() {
     );
 
     setPhotos(
-      photosWithUrls.filter((photo) => photo.status === "pending")
+      photosWithUrls.filter(
+        (photo) => photo.status === "pending"
+      )
     );
 
     setApprovedPhotos(
-      photosWithUrls.filter((photo) => photo.status === "approved")
+      photosWithUrls.filter(
+        (photo) => photo.status === "approved"
+      )
     );
 
     setIsLoading(false);
@@ -129,6 +328,7 @@ export default function AdminPhotosPage() {
     }
 
     // 3. Database kaydını approved yap
+    // Bu UPDATE işlemi Realtime tarafından da yakalanacak.
     const { error: updateError } = await supabase
       .from("photos")
       .update({
@@ -148,10 +348,17 @@ export default function AdminPhotosPage() {
       return;
     }
 
-    // 4. Yeni approved dosyası için signed URL oluştur
+    // ==========================================
+    // LOCAL STATE
+    // ==========================================
+    //
+    // Realtime birazdan UPDATE eventini de getirecek.
+    // Burada da anında UI'ı güncelliyoruz.
+    //
+    // Böylece kullanıcı herhangi bir gecikme hissetmiyor.
+
     const newSignedUrl = await createSignedUrl(approvedPath);
 
-    // 5. Local state'i direkt güncelle
     const approvedPhoto: Photo = {
       ...photo,
       status: "approved",
@@ -159,16 +366,25 @@ export default function AdminPhotosPage() {
       signedUrl: newSignedUrl,
     };
 
-    // Bekleyenlerden kaldır
     setPhotos((currentPhotos) =>
-      currentPhotos.filter((item) => item.id !== photo.id)
+      currentPhotos.filter(
+        (item) => item.id !== photo.id
+      )
     );
 
-    // Onaylananlara ekle
-    setApprovedPhotos((currentPhotos) => [
-      approvedPhoto,
-      ...currentPhotos,
-    ]);
+    setApprovedPhotos((currentPhotos) => {
+      const exists = currentPhotos.some(
+        (item) => item.id === photo.id
+      );
+
+      if (exists) {
+        return currentPhotos.map((item) =>
+          item.id === photo.id ? approvedPhoto : item
+        );
+      }
+
+      return [approvedPhoto, ...currentPhotos];
+    });
 
     setActionLoading(null);
   };
@@ -188,7 +404,10 @@ export default function AdminPhotosPage() {
       .remove([photo.storage_path]);
 
     if (storageError) {
-      console.error("STORAGE DELETE ERROR:", storageError);
+      console.error(
+        "STORAGE DELETE ERROR:",
+        storageError
+      );
 
       setError(
         `Fotoğraf silinemedi: ${storageError.message}`
@@ -204,7 +423,10 @@ export default function AdminPhotosPage() {
       .eq("id", photo.id);
 
     if (databaseError) {
-      console.error("DATABASE DELETE ERROR:", databaseError);
+      console.error(
+        "DATABASE DELETE ERROR:",
+        databaseError
+      );
 
       setError(
         `Fotoğraf kaydı silinemedi: ${databaseError.message}`
@@ -214,9 +436,11 @@ export default function AdminPhotosPage() {
       return;
     }
 
-    // Local state'ten direkt kaldır
+    // Local state
     setPhotos((currentPhotos) =>
-      currentPhotos.filter((item) => item.id !== photo.id)
+      currentPhotos.filter(
+        (item) => item.id !== photo.id
+      )
     );
 
     setActionLoading(null);
@@ -269,9 +493,11 @@ export default function AdminPhotosPage() {
       return;
     }
 
-    // Local state'ten direkt kaldır
+    // Local state
     setApprovedPhotos((currentPhotos) =>
-      currentPhotos.filter((item) => item.id !== photo.id)
+      currentPhotos.filter(
+        (item) => item.id !== photo.id
+      )
     );
 
     setActionLoading(null);
@@ -382,8 +608,12 @@ export default function AdminPhotosPage() {
 
                           <button
                             type="button"
-                            onClick={() => handleApprove(photo)}
-                            disabled={actionLoading === photo.id}
+                            onClick={() =>
+                              handleApprove(photo)
+                            }
+                            disabled={
+                              actionLoading === photo.id
+                            }
                             className="rounded-full bg-[#8d9b85] px-4 py-2.5 text-sm text-white transition hover:bg-[#7d8b75] disabled:opacity-60"
                           >
                             {actionLoading === photo.id
@@ -393,8 +623,12 @@ export default function AdminPhotosPage() {
 
                           <button
                             type="button"
-                            onClick={() => handleReject(photo)}
-                            disabled={actionLoading === photo.id}
+                            onClick={() =>
+                              handleReject(photo)
+                            }
+                            disabled={
+                              actionLoading === photo.id
+                            }
                             className="rounded-full border border-[#d7c8bf] px-4 py-2.5 text-sm text-[#a16f68] transition hover:bg-[#f2eee6] disabled:opacity-60"
                           >
                             Reddet
@@ -472,7 +706,9 @@ export default function AdminPhotosPage() {
                           onClick={() =>
                             handleDeleteApproved(photo)
                           }
-                          disabled={actionLoading === photo.id}
+                          disabled={
+                            actionLoading === photo.id
+                          }
                           className="mt-5 w-full rounded-full border border-[#d7c8bf] px-4 py-2.5 text-sm text-[#a16f68] transition hover:bg-[#f2eee6] disabled:opacity-60"
                         >
                           {actionLoading === photo.id
