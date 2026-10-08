@@ -16,7 +16,37 @@ export default function PhotoGallery() {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
   useEffect(() => {
+    // İlk açılışta fotoğrafları yükle
     loadApprovedPhotos();
+
+    // Supabase Realtime bağlantısı
+    const channel = supabase
+      .channel("approved-photos-gallery")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "photos",
+        },
+        (payload) => {
+          console.log("GALERİ GÜNCELLENDİ:", payload);
+
+          // Veritabanında herhangi bir değişiklik olduğunda
+          // sadece galeriyi yeniden getir.
+          //
+          // Bu bir sayfa refresh'i değildir.
+          loadApprovedPhotos();
+        }
+      )
+      .subscribe((status) => {
+        console.log("GALERİ REALTIME:", status);
+      });
+
+    // Component kapanınca Realtime bağlantısını temizle
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // ESC ile lightbox kapatma
@@ -48,8 +78,6 @@ export default function PhotoGallery() {
   }, [selectedPhoto]);
 
   const loadApprovedPhotos = async () => {
-    setIsLoading(true);
-
     const { data, error } = await supabase
       .from("photos")
       .select("id, created_at, storage_path")
@@ -140,13 +168,15 @@ export default function PhotoGallery() {
                     : "aspect-square"
                 }`}
               >
-               <img
-  src={imageUrl}
-  alt="Tuğba & Murat'ın anılarından"
-  draggable={false}
-  onContextMenu={(event) => event.preventDefault()}
-  className="h-full w-full select-none object-cover transition duration-700 ease-out group-hover:scale-[1.04]"
-/>
+                <img
+                  src={imageUrl}
+                  alt="Tuğba & Murat'ın anılarından"
+                  draggable={false}
+                  onContextMenu={(event) =>
+                    event.preventDefault()
+                  }
+                  className="h-full w-full select-none object-cover transition duration-700 ease-out group-hover:scale-[1.04]"
+                />
               </div>
 
               {/* Hover efekti */}
@@ -181,13 +211,15 @@ export default function PhotoGallery() {
             className="relative flex max-h-full max-w-full items-center justify-center"
             onClick={(event) => event.stopPropagation()}
           >
-          <img
-  src={selectedPhoto}
-  alt="Büyütülmüş anı fotoğrafı"
-  draggable={false}
-  onContextMenu={(event) => event.preventDefault()}
-  className="max-h-[90vh] max-w-[92vw] select-none rounded-[12px] object-contain shadow-[0_25px_80px_rgba(0,0,0,0.35)]"
-/>
+            <img
+              src={selectedPhoto}
+              alt="Büyütülmüş anı fotoğrafı"
+              draggable={false}
+              onContextMenu={(event) =>
+                event.preventDefault()
+              }
+              className="max-h-[90vh] max-w-[92vw] select-none rounded-[12px] object-contain shadow-[0_25px_80px_rgba(0,0,0,0.35)]"
+            />
           </div>
         </div>
       )}
