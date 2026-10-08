@@ -18,22 +18,22 @@ export default function AdminPhotosPage() {
   const [error, setError] = useState("");
   const [actionLoading, setActionLoading] = useState<number | null>(null);
 
-useEffect(() => {
-  const checkAuth = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  useEffect(() => {
+    const checkAuth = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    if (!user) {
-      window.location.href = "/admin/login";
-      return;
-    }
+      if (!user) {
+        window.location.href = "/admin/login";
+        return;
+      }
 
-    loadPhotos();
-  };
+      loadPhotos();
+    };
 
-  checkAuth();
-}, []);
+    checkAuth();
+  }, []);
 
   const createSignedUrl = async (storagePath: string) => {
     const { data, error } = await supabase.storage
@@ -148,7 +148,28 @@ useEffect(() => {
       return;
     }
 
-    await loadPhotos();
+    // 4. Yeni approved dosyası için signed URL oluştur
+    const newSignedUrl = await createSignedUrl(approvedPath);
+
+    // 5. Local state'i direkt güncelle
+    const approvedPhoto: Photo = {
+      ...photo,
+      status: "approved",
+      storage_path: approvedPath,
+      signedUrl: newSignedUrl,
+    };
+
+    // Bekleyenlerden kaldır
+    setPhotos((currentPhotos) =>
+      currentPhotos.filter((item) => item.id !== photo.id)
+    );
+
+    // Onaylananlara ekle
+    setApprovedPhotos((currentPhotos) => [
+      approvedPhoto,
+      ...currentPhotos,
+    ]);
+
     setActionLoading(null);
   };
 
@@ -193,7 +214,11 @@ useEffect(() => {
       return;
     }
 
-    await loadPhotos();
+    // Local state'ten direkt kaldır
+    setPhotos((currentPhotos) =>
+      currentPhotos.filter((item) => item.id !== photo.id)
+    );
+
     setActionLoading(null);
   };
 
@@ -212,7 +237,10 @@ useEffect(() => {
       .remove([photo.storage_path]);
 
     if (storageError) {
-      console.error("APPROVED STORAGE DELETE ERROR:", storageError);
+      console.error(
+        "APPROVED STORAGE DELETE ERROR:",
+        storageError
+      );
 
       setError(
         `Fotoğraf silinemedi: ${storageError.message}`
@@ -228,7 +256,10 @@ useEffect(() => {
       .eq("id", photo.id);
 
     if (databaseError) {
-      console.error("APPROVED DATABASE DELETE ERROR:", databaseError);
+      console.error(
+        "APPROVED DATABASE DELETE ERROR:",
+        databaseError
+      );
 
       setError(
         `Fotoğraf kaydı silinemedi: ${databaseError.message}`
@@ -238,7 +269,11 @@ useEffect(() => {
       return;
     }
 
-    await loadPhotos();
+    // Local state'ten direkt kaldır
+    setApprovedPhotos((currentPhotos) =>
+      currentPhotos.filter((item) => item.id !== photo.id)
+    );
+
     setActionLoading(null);
   };
 
@@ -372,8 +407,8 @@ useEffect(() => {
 
                 </div>
               )}
-            </section>
 
+            </section>
 
             {/* =========================
                 ONAYLANAN FOTOĞRAFLAR
@@ -453,7 +488,6 @@ useEffect(() => {
               )}
 
             </section>
-
           </>
         )}
 
