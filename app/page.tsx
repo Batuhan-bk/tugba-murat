@@ -184,6 +184,12 @@ Pendik / İstanbul`}
             />
 
           </div>
+          <div>
+
+            <p>Düğün için; gelin evinden saat 12:00'de 
+              Damat evinden saat 12:30'da otobüs kalkacaktır.
+            </p>
+          </div>
 
         </div>
       </section>
