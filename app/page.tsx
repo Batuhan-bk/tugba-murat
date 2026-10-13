@@ -144,76 +144,61 @@ Pendik / İstanbul`}
             />
           </div>
 
-          {/* DÜĞÜN GÜNÜ ULAŞIM BİLGİSİ */}
-          <div className="mx-auto mt-12 w-full max-w-2xl border-t border-[#dfd0c5] pt-8">
-            {/* Üst süsleme */}
-            <div className="mb-6 flex items-center justify-center gap-4">
-              <span className="h-px w-12 bg-[#d8c4b8]" />
-              <span className="font-serif text-xl text-[#b38e83]">❦</span>
-              <span className="h-px w-12 bg-[#d8c4b8]" />
-            </div>
+{/* DÜĞÜN GÜNÜ ULAŞIM BİLGİSİ */}
+<div className="mx-auto mt-10 w-full max-w-xl border-t border-[#dfd0c5] pt-6 text-center">
+  <div className="mb-3 flex items-center justify-center gap-3">
+    <span className="h-px w-7 bg-[#d8c4b8]" />
+    <span className="text-sm text-[#b38e83]">❦</span>
+    <span className="h-px w-7 bg-[#d8c4b8]" />
+  </div>
 
-            <h3 className="text-center font-serif text-2xl text-[#66564d] sm:text-3xl">
-              Düğün Günü Ulaşım Bilgisi
-            </h3>
+  <h3 className="font-serif text-xl text-[#66564d] sm:text-2xl">
+    Düğün Günü Ulaşım Bilgisi
+  </h3>
 
-            <p className="mx-auto mt-3 max-w-md text-center text-sm leading-6 text-[#8d8178]">
-              Otobüslerimiz, düğün salonuna ulaşım için belirtilen saatlerde
-              hareket edecektir.
-            </p>
+  <p className="mx-auto mt-2 max-w-md text-xs leading-5 text-[#8d8178]">
+    Otobüslerimiz belirtilen saatlerde hareket edecektir.
+  </p>
 
-            {/* EŞİT VE SİMETRİK KARTLAR */}
-            <div className="mx-auto mt-7 grid w-full max-w-xl grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
-              {/* GELİN EVİ */}
-              <div className="flex min-h-[165px] flex-col items-center justify-center rounded-2xl border border-[#e6d9d0] bg-white/40 px-5 py-5 text-center shadow-[0_4px_12px_rgba(80,65,55,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(80,65,55,0.08)]">
-                <div className="mb-3 flex h-8 items-center justify-center gap-2 text-[#b38e83]">
-                  <span className="text-sm">✿</span>
-                  <span className="text-2xl">❧</span>
-                  <span className="text-sm">✿</span>
-                </div>
+  <div className="mx-auto mt-5 grid max-w-md grid-cols-1 gap-3 sm:grid-cols-2">
+    {/* GELİN EVİ */}
+    <div className="flex items-center justify-center gap-3 rounded-lg border border-[#e6d9d0] bg-white/30 px-3 py-3">
+      <span className="text-lg text-[#b38e83]">✿</span>
 
-                <p className="text-xs uppercase tracking-[0.22em] text-[#9a8c82]">
-                  Gelin evi
-                </p>
+      <div className="text-left">
+        <p className="text-[10px] uppercase tracking-[0.18em] text-[#9a8c82]">
+          Gelin evi
+        </p>
 
-                <p className="mt-2 font-serif text-3xl text-[#403a36]">
-                  12:00
-                </p>
+        <p className="mt-1 font-serif text-xl text-[#403a36]">
+          12:00
+        </p>
+      </div>
+    </div>
 
-                <p className="mt-1 text-xs tracking-wide text-[#8d8178]">
-                  Otobüs hareket saati
-                </p>
-              </div>
+    {/* DAMAT EVİ */}
+    <div className="flex items-center justify-center gap-3 rounded-lg border border-[#e6d9d0] bg-white/30 px-3 py-3">
+      <span className="text-lg text-[#b38e83]">✿</span>
 
-              {/* DAMAT EVİ */}
-              <div className="flex min-h-[165px] flex-col items-center justify-center rounded-2xl border border-[#e6d9d0] bg-white/40 px-5 py-5 text-center shadow-[0_4px_12px_rgba(80,65,55,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(80,65,55,0.08)]">
-                <div className="mb-3 flex h-8 items-center justify-center gap-2 text-[#b38e83]">
-                  <span className="text-sm">✿</span>
-                  <span className="text-2xl">❧</span>
-                  <span className="text-sm">✿</span>
-                </div>
+      <div className="text-left">
+        <p className="text-[10px] uppercase tracking-[0.18em] text-[#9a8c82]">
+          Damat evi
+        </p>
 
-                <p className="text-xs uppercase tracking-[0.22em] text-[#9a8c82]">
-                  Damat evi
-                </p>
+        <p className="mt-1 font-serif text-xl text-[#403a36]">
+          12:30
+        </p>
+      </div>
+    </div>
+  </div>
 
-                <p className="mt-2 font-serif text-3xl text-[#403a36]">
-                  12:30
-                </p>
+  <div className="mt-4 flex items-center justify-center gap-2">
+    <span className="h-px w-5 bg-[#e0d1c7]" />
+    <span className="text-xs text-[#b38e83]">♡</span>
+    <span className="h-px w-5 bg-[#e0d1c7]" />
+  </div>
+</div>
 
-                <p className="mt-1 text-xs tracking-wide text-[#8d8178]">
-                  Otobüs hareket saati
-                </p>
-              </div>
-            </div>
-
-            {/* ALT SÜSLEME */}
-            <div className="mt-6 flex items-center justify-center gap-3">
-              <span className="h-px w-8 bg-[#e0d1c7]" />
-              <span className="text-sm text-[#b38e83]">♡</span>
-              <span className="h-px w-8 bg-[#e0d1c7]" />
-            </div>
-          </div>
         </div>
       </section>
 
