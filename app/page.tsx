@@ -186,7 +186,8 @@ Pendik / İstanbul`}
           </div>
           <div>
 
-            <p>Düğün için; gelin evinden saat 12:00'de 
+            <p className="mx-auto mt-6 max-w-md text-sm leading-7 text-[#77716b]">
+              Düğün için; gelin evinden saat 12:00'de 
               Damat evinden saat 12:30'da otobüs kalkacaktır.
             </p>
           </div>
