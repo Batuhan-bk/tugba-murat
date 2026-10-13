@@ -194,7 +194,7 @@ Pendik / İstanbul`}
               </div>
             </div>
 
-            <p className="mx-auto mt-5 max-w-md text-xs leading-6 text-[#8d8178]">
+            <p className="mx-auto mt-5 max-w-md text-sm leading-6 text-[#8d8178]">
               Düğün salonuna ulaşım için otobüsler belirtilen saatlerde
               hareket edecektir.
             </p>
